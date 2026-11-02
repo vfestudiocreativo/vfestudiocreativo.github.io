@@ -1,0 +1,48 @@
+name: Publicar portfolio VF Estudio Creativo
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "portfolio-vf-estudio-creativo-github-pages.zip"
+      - ".github/workflows/publicar-portfolio.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Extraer archivos del portfolio
+        run: |
+          mkdir -p _site
+          unzip -q portfolio-vf-estudio-creativo-github-pages.zip -d _site
+          test -f _site/index.html
+
+      - name: Subir archivos del sitio
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+          include-hidden-files: true
+
+      - name: Publicar sitio web
+        id: deployment
+        uses: actions/deploy-pages@v4

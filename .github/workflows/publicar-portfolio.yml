@@ -46,3 +46,5 @@ jobs:
       - name: Publicar sitio web
         id: deployment
         uses: actions/deploy-pages@v4
+
+# Publicar los archivos reales del portfolio y reemplazar la pagina de README.

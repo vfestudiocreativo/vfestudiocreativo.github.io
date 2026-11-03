@@ -4,13 +4,10 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "portfolio-vf-estudio-creativo-github-pages.zip"
-      - ".github/workflows/publicar-portfolio.yml"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -28,14 +25,28 @@ jobs:
       - name: Descargar el repositorio
         uses: actions/checkout@v4
 
-      - name: Preparar GitHub Pages
-        uses: actions/configure-pages@v5
+      - name: Importar los archivos originales a GitHub (solo primera vez)
+        run: |
+          if [ ! -f index.html ]; then
+            unzip -q portfolio-vf-estudio-creativo-github-pages.zip -d .
+            test -f index.html
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -- .nojekyll app.js assets contact.css contact.js contacto.html favicon.svg index.html nuestros-servicios.pdf portfolio.html servicios.html studio.css studio.js styles.css
+            if ! git diff --cached --quiet; then
+              git commit -m "Organizar portfolio en archivos y carpetas editables"
+              git push origin HEAD:main
+            fi
+          fi
 
-      - name: Extraer archivos del portfolio
+      - name: Preparar archivos para publicar
         run: |
           mkdir -p _site
-          unzip -q portfolio-vf-estudio-creativo-github-pages.zip -d _site
+          cp -a .nojekyll app.js assets contact.css contact.js contacto.html favicon.svg index.html nuestros-servicios.pdf portfolio.html servicios.html studio.css studio.js styles.css _site/
           test -f _site/index.html
+
+      - name: Preparar GitHub Pages
+        uses: actions/configure-pages@v5
 
       - name: Subir archivos del sitio
         uses: actions/upload-pages-artifact@v3
@@ -46,5 +57,3 @@ jobs:
       - name: Publicar sitio web
         id: deployment
         uses: actions/deploy-pages@v4
-
-# Publicar los archivos reales del portfolio y reemplazar la pagina de README.
